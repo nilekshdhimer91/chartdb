@@ -4,6 +4,12 @@ import { createBrowserRouter } from 'react-router-dom';
 import type { TemplatePageLoaderData } from './pages/template-page/template-page';
 import type { TemplatesPageLoaderData } from './pages/templates-page/templates-page';
 import { getTemplatesAndAllTags } from './templates-data/template-utils';
+import { ProtectedRoute } from './auth';
+
+/** Wrap a lazy element with ProtectedRoute at the route level */
+const withAuth = (element: React.ReactNode) => (
+    <ProtectedRoute>{element}</ProtectedRoute>
+);
 
 const routes: RouteObject[] = [
     ...['', 'diagrams/:diagramId'].map((path) => ({
@@ -11,9 +17,8 @@ const routes: RouteObject[] = [
         async lazy() {
             const { EditorPage } =
                 await import('./pages/editor-page/editor-page');
-
             return {
-                element: <EditorPage />,
+                element: withAuth(<EditorPage />),
             };
         },
     })),
@@ -23,7 +28,7 @@ const routes: RouteObject[] = [
             const { ExamplesPage } =
                 await import('./pages/examples-page/examples-page');
             return {
-                element: <ExamplesPage />,
+                element: withAuth(<ExamplesPage />),
             };
         },
     },
@@ -34,17 +39,12 @@ const routes: RouteObject[] = [
             const { TemplatesPage } =
                 await import('./pages/templates-page/templates-page');
             return {
-                element: <TemplatesPage />,
+                element: withAuth(<TemplatesPage />),
             };
         },
-
         loader: async (): Promise<TemplatesPageLoaderData> => {
             const { tags, templates } = await getTemplatesAndAllTags();
-
-            return {
-                allTags: tags,
-                templates,
-            };
+            return { allTags: tags, templates };
         },
     },
     {
@@ -54,18 +54,14 @@ const routes: RouteObject[] = [
             const { TemplatesPage } =
                 await import('./pages/templates-page/templates-page');
             return {
-                element: <TemplatesPage />,
+                element: withAuth(<TemplatesPage />),
             };
         },
         loader: async (): Promise<TemplatesPageLoaderData> => {
             const { tags, templates } = await getTemplatesAndAllTags({
                 featured: true,
             });
-
-            return {
-                allTags: tags,
-                templates,
-            };
+            return { allTags: tags, templates };
         },
     },
     {
@@ -75,18 +71,14 @@ const routes: RouteObject[] = [
             const { TemplatesPage } =
                 await import('./pages/templates-page/templates-page');
             return {
-                element: <TemplatesPage />,
+                element: withAuth(<TemplatesPage />),
             };
         },
         loader: async ({ params }): Promise<TemplatesPageLoaderData> => {
             const { tags, templates } = await getTemplatesAndAllTags({
                 tag: params.tag?.replace(/-/g, ' '),
             });
-
-            return {
-                allTags: tags,
-                templates,
-            };
+            return { allTags: tags, templates };
         },
     },
     {
@@ -96,7 +88,7 @@ const routes: RouteObject[] = [
             const { TemplatePage } =
                 await import('./pages/template-page/template-page');
             return {
-                element: <TemplatePage />,
+                element: withAuth(<TemplatePage />),
             };
         },
         loader: async ({ params }): Promise<TemplatePageLoaderData> => {
@@ -114,9 +106,11 @@ const routes: RouteObject[] = [
         path: 'templates/clone/:templateSlug',
         async lazy() {
             const { CloneTemplatePage } =
-                await import('./pages/clone-template-page/clone-template-page');
+                await import(
+                    './pages/clone-template-page/clone-template-page'
+                );
             return {
-                element: <CloneTemplatePage />,
+                element: withAuth(<CloneTemplatePage />),
             };
         },
         loader: async ({ params }) => {
